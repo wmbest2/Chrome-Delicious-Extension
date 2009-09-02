@@ -2,7 +2,7 @@
   "content_scripts": [
     {
       "js": [
-        "js/delicious_content_script.js"
+        "js/tab-content-script.js"
       ], 
       "matches": [
         "http://*/*"
@@ -11,10 +11,13 @@
   ],
   "page_actions": [
     {
-        "id": "tagpage",
+        "id": "tag_page",
         "name": "Tag this page on Delicious",
-        "icons": ["images/tagUp24.png", "images/tagUp24.png"]
+        "icons": ["images/tag16.png"]
     }
+  ],
+  "permissions": [
+        "tabs"
   ],
   "name": "Del.icio.us Tools",
   "version": "0.5",
