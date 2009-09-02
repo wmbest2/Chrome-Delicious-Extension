@@ -2,17 +2,24 @@
   "content_scripts": [
     {
       "js": [
-        "delicious_content_script.js"
+        "js/delicious_content_script.js"
       ], 
       "matches": [
         "http://*/*"
       ]
     }
-  ], 
+  ],
+  "page_actions": [
+    {
+        "id": "tagpage",
+        "name": "Tag this page on Delicious",
+        "icons": ["images/tagUp24.png", "images/tagUp24.png"]
+    }
+  ],
   "name": "Del.icio.us Tools",
-  "version": "1.0",
+  "version": "0.5",
   "description": "Del.icio.us toolbar for Chrome",
   "toolstrips": [
-    "my_toolstrip.html"
+    "main_toolstrip.html"
   ]
 }
