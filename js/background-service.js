@@ -30,7 +30,6 @@ var title;
 // Listener for messages posted via the content script
 chrome.extension.onConnect.addListener(function(port) {
     port.onMessage.addListener(function(data) {
-        console.log('Received a message');
         url = data.url;
         title = data.title;
         
@@ -43,7 +42,6 @@ chrome.extension.onConnect.addListener(function(port) {
                                             iconId: 0
                                         });
 
-        console.log('Page action enabled!');
     });
 });
 
