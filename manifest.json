@@ -1,4 +1,5 @@
 {
+  "background_page": "background.html",
   "content_scripts": [
     {
       "js": [

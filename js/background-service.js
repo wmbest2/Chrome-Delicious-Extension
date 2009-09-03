@@ -23,15 +23,36 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-getUrl();
+var deliciousUrl = "http://delicious.com/save?v=5&amp;noui&amp;jump=close&amp;url=";
+var url;
+var title;
 
-window.addEventListener("focus", getUrl);
+// Listener for messages posted via the content script
+chrome.extension.onConnect.addListener(function(port) {
+    port.onMessage.addListener(function(data) {
+        console.log('Received a message');
+        url = data.url;
+        title = data.title;
+        
+        // Register the tab with the tagging page action
+        chrome.pageActions.enableForTab("tag_page",
+                                        { 
+                                            tabId: port.tab.id,
+                                            url: port.tab.url,
+                                            title: "Click to tag this page on Delicious",
+                                            iconId: 0
+                                        });
 
-function getUrl() {
-    if(window == top) {
-        chrome.extension.connect().postMessage({ 
-            "url" : window.location.href,
-            "title" : window.document.title
-        });
-    }
-}
+        console.log('Page action enabled!');
+    });
+});
+
+chrome.pageActions["tag_page"].addListener(function(pageActionId, reply) {
+    console.log(reply);
+    tagCurrentPage();
+});
+
+function tagCurrentPage() {
+    window.open(deliciousUrl + url + '&title=' + title +' ','deliciousuiv5','location=yes,links=no,scrollbars=no,toolbar=no,width=550,height=550');
+};
+
