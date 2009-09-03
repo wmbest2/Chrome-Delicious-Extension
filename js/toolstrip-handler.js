@@ -2,8 +2,8 @@ var deliciousUrl = "http://delicious.com/save?v=5&amp;noui&amp;jump=close&amp;ur
 var url;
 var title;
 
-// grabbed from delicious_content_script.js
-chrome.self.onConnect.addListener(function(port) {
+// Listener for messages posted via the content script
+chrome.extension.onConnect.addListener(function(port) {
     port.onMessage.addListener(function(data) {
         url = data.url;
         title = data.title;
@@ -16,20 +16,11 @@ chrome.self.onConnect.addListener(function(port) {
                                             title: "Click to tag this page on Delicious",
                                             iconId: 0
                                         });
-        
-        // Once more for luck, because I swear these things don't show
-        // up if there's only one in the omnibar
-        chrome.pageActions.enableForTab("tag_page",
-                                        { 
-                                            tabId: port.tab.id,
-                                            url: port.tab.url,
-                                            title: "Click to tag this page on Delicious",
-                                            iconId: 1
-                                        });
     });
 });
 
 chrome.pageActions["tag_page"].addListener(function(pageActionId, reply) {
+    console.log(reply);
     tagCurrentPage();
 });
 

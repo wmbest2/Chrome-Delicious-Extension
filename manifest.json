@@ -13,7 +13,7 @@
     {
         "id": "tag_page",
         "name": "Tag this page on Delicious",
-        "icons": ["images/tag_gray_16.png", "images/tag_blue_16.png"]
+        "icons": ["images/tag_blue_16.png", "images/tag_gray_16.png"]
     }
   ],
   "permissions": [
