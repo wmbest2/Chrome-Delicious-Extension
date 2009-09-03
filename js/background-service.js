@@ -54,3 +54,39 @@ function tagCurrentPage() {
     window.open(deliciousUrl + url + '&title=' + title +' ','deliciousuiv5','location=yes,links=no,scrollbars=no,toolbar=no,width=550,height=550');
 };
 
+this._database = window.openDatabase("deliciousDatabase", "0.1", "Delicious Database", 250 * 1024);
+
+if (!this._database) {
+    console.log("Error opening database");
+}
+
+// Create settings table
+this._database.transaction(function(query) {
+    query.executeSql('CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(50), password VARCHAR(50))', 
+                     []);
+});
+
+// Write a user 
+this._database.transaction(function(query) {
+    query.executeSql('INSERT INTO settings(username, password) VALUES(?, ?)', 
+                     ['Scott', 'password'],
+                     function(transaction, result) {
+                         console.log(result);
+                     },
+                     function(transaction, error) {
+                         console.log(error);
+                     });
+});
+
+// Read the table 
+this._database.transaction(function(query) {
+    query.executeSql('SELECT * FROM settings', 
+                     [], 
+                     function(transaction, result) {
+                        console.log(transaction);
+                        console.log(result);
+                     },
+                     function(transaction, error) {
+                         console.log(error);
+                     });
+});
