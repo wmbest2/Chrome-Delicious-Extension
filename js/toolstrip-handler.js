@@ -27,3 +27,15 @@ chrome.pageActions["tag_page"].addListener(function(pageActionId, reply) {
 function tagCurrentPage() {
     window.open(deliciousUrl + url + '&title=' + title +' ','deliciousuiv5','location=yes,links=no,scrollbars=no,toolbar=no,width=550,height=550');
 };
+
+dojo.addOnLoad(function(){
+	    dojo.query(".menu")
+		.connect("onclick",function(){
+		    chrome.toolstrip.expand({height: 300});  	
+		});
+    	    dojo.query("body")
+		.connect("onmouseleave", function(){
+	    		chrome.toolstrip.collapse();
+		});		
+	});
+
