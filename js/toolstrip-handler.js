@@ -8,16 +8,19 @@ chrome.self.onConnect.addListener(function(port) {
         url = data.url;
         title = data.title;
 
+
+	console.log(port.tab.id + ": " + port.tab.url);
+
         // Register the tab with the tagging page action
         chrome.pageActions.enableForTab("tag_page",
                                         { 
                                             tabId: port.tab.id,
-                                            url: port.tab.url
+                                            url: port.tab.url 
                                         });
     });
 });
 
-chrome.pageActions["tag_page"].addListener(function(actionId, reply) {
+chrome.pageActions["tag_page"].addListener(function(pageActionId, reply) {
     tagCurrentPage();
 });
 
