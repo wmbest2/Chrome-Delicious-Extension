@@ -7,15 +7,24 @@ chrome.self.onConnect.addListener(function(port) {
     port.onMessage.addListener(function(data) {
         url = data.url;
         title = data.title;
-
-
-	console.log(port.tab.id + ": " + port.tab.url);
-
+        
         // Register the tab with the tagging page action
         chrome.pageActions.enableForTab("tag_page",
                                         { 
                                             tabId: port.tab.id,
-                                            url: port.tab.url 
+                                            url: port.tab.url,
+                                            title: "Click to tag this page on Delicious",
+                                            iconId: 0
+                                        });
+        
+        // Once more for luck, because I swear these things don't show
+        // up if there's only one in the omnibar
+        chrome.pageActions.enableForTab("tag_page",
+                                        { 
+                                            tabId: port.tab.id,
+                                            url: port.tab.url,
+                                            title: "Click to tag this page on Delicious",
+                                            iconId: 1
                                         });
     });
 });
@@ -29,13 +38,11 @@ function tagCurrentPage() {
 };
 
 dojo.addOnLoad(function(){
-	    dojo.query(".menu")
-		.connect("onclick",function(){
-		    chrome.toolstrip.expand({height: 300});  	
-		});
-    	    dojo.query("body")
-		.connect("onmouseleave", function(){
-	    		chrome.toolstrip.collapse();
-		});		
+    dojo.query(".menu").connect("onclick", function() {
+		chrome.toolstrip.expand({height: 300});
 	});
-
+    
+    dojo.query("body").connect("onmouseleave", function() {
+	    chrome.toolstrip.collapse();
+	});		
+});
