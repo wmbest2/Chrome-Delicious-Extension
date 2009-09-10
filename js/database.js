@@ -58,23 +58,96 @@ function DeliciousDatabase() {
 
     // Create the tables if they don't exist already
     this.database.transaction(function(query) {
-        query.executeSql('CREATE TABLE tags(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50))', []);
+        query.executeSql('CREATE TABLE tags(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) UNIQUE)', []);
     });
 
     this.database.transaction(function(query) {
-        query.executeSql('CREATE TABLE bookmarks(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(50), url VARCHAR(250))', []);
+        query.executeSql('CREATE TABLE bookmarks(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(50), url VARCHAR(250) UNIQUE)', []);
     });
 
     this.database.transaction(function(query) {
-        query.executeSql('CREATE TABLE tagged_bookmark(FOREIGN KEY (tag) REFERENCES tags(id), FOREIGN KEY (bookmark) REFERENCES bookmarks(id))', []);
+        query.executeSql('CREATE TABLE tagged_bookmarks(tag FOREIGNKEY REFERENCES tags(id), bookmark FOREIGNKEY REFERENCES bookmarks(id))', []);
     });
 
     this.database.transaction(function(query) {
         query.executeSql('CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(50), password VARCHAR(50))', []);
     });
-
-    return this;
 }
+
+/**
+ * Counts the number of tags currently stored
+ *
+ */
+DeliciousDatabase.prototype.getTagCount = function() {
+    
+    this.database.transaction(function(query) {
+        query.executeSql('SELECT COUNT(*) FROM tags',
+                         [],
+                         function(transaction, result) {
+                             return result.rows.length;
+                         });
+    });
+};
+
+/**
+ * Returns the internal ID of a stored tag
+ *
+ */
+DeliciousDatabase.prototype.getTagID = function(tag) {
+    
+    this.database.transaction(function(query) {
+        query.executeSql('SELECT id FROM tags WHERE name = ?',
+                         [tag],
+                         function(transaction, result) {
+                             if (result.rows.length == 0) {
+                                return -1;
+                             }
+
+                             return result.rows.item(0).id;
+                         });
+    });
+};
+
+/**
+ * Returns the internal ID of a stored bookmark
+ *
+ */
+DeliciousDatabase.prototype.getBookmarkID = function(bookmark) {
+    
+    this.database.transaction(function(query) {
+        query.executeSql('SELECT id FROM bookmarks WHERE url = ?',
+                         [bookmark],
+                         function(transaction, result) {
+                             if (result.rows.length == 0) {
+                                return -1;
+                             }
+                            
+                             return result.rows.item(0).id;
+                         });
+    });
+};
+
+/**
+ * Adds a tag to the database
+ *
+ * @param name - string Name of tag
+ *
+ */
+DeliciousDatabase.prototype.addTag = function(tag) {
+
+    // Type checking for parameters
+    if (!(typeOf(tag) == 'string')) {
+        console.log('ERROR: tag not a string');
+
+        return false;
+    }
+
+    this.database.transaction(function(query) {
+        query.executeSql('INSERT INTO tags(name) VALUES(?)', [tag]);
+    });
+
+    return this.getTagID(tag);
+};
 
 /**
  * Adds a bookmark to the database.
@@ -85,6 +158,9 @@ function DeliciousDatabase() {
  *
  */
 DeliciousDatabase.prototype.addBookmark = function(title, url, tags) {
+
+    var tagIdList = [];
+    var that = this;
 
     // If tags weren't provided, default to an empty
     // array
@@ -98,13 +174,28 @@ DeliciousDatabase.prototype.addBookmark = function(title, url, tags) {
         query.executeSql('INSERT INTO bookmarks(title, url) VALUES(?, ?)',
                          [title, url]);
     });
+
+    // Track the new tag ID's as we add them
+    for (var i = 0; i < tags.length; i++) {
+        tagIdList[i] = this.addTag(tags[i]);
+    }
+
+    // Update the tagged_bookmarks table
+    for (var i = 0; i < tagIdList.length; i++) {
+        this.database.transaction(function(query) {
+            console.log('Tag ID: ' + tagIdList[i]);
+            console.log('Bookmark ID: ' + that.getBookmarkID(url));
+            query.executeSql('INSERT INTO tagged_bookmarks(tag, bookmark) VALUES(?, ?)',
+                             [tagIdList[i], that.getBookmarkID(url)]);
+        });
+    }
 };
 
 /**
  * Fetch all bookmarks
  *
  */
-DeliciousDatabase.prototype.getBookmarks = function() {
+DeliciousDatabase.prototype.getAllBookmarks = function() {
 
     this.database.transaction(function(query) {
         query.executeSql('SELECT * FROM bookmarks', 
@@ -115,6 +206,37 @@ DeliciousDatabase.prototype.getBookmarks = function() {
                             }
                          });
     }); 
+};
+
+/**
+ * Fetch all bookmarks with a given tag
+ *
+ * @param tag - string Tag to query for
+ *
+ */
+DeliciousDatabase.prototype.getBookmarksByTag = function(tag) {
+
+    // Type checking for parameters
+    if (!(typeOf(tag) == 'string')) {
+        console.log('ERROR: tag not a string');
+
+        return false;
+    }
+
+    this.database.transaction(function(query) {
+        query.executeSql('SELECT b.title,b.url FROM bookmarks AS b, tags AS t, tagged_bookmarks AS j WHERE b.id = j.bookmark AND t.id = j.tag AND t.name = ?', 
+                         [tag],
+                         function(transaction, result) {
+                            console.log(result.rows.length);
+                            console.log(tag);
+                            for (var i = 0; i < result.rows.length; i++) {
+                                console.log(result.rows.item(i).title);
+                            }
+                         },
+                         function(transaction, error) {
+                             console.log(error);
+                         });
+    });
 };
 
 /**
@@ -129,11 +251,17 @@ DeliciousDatabase.prototype.getBookmarks = function() {
 DeliciousDatabase.prototype.setupUser = function(username, password) {
 
     // Type checking for parameters
-    if (!(typeOf(username) == 'string'))
-        console.log('ERROR: not a string');
+    if (!(typeOf(username) == 'string')) {
+        console.log('ERROR: username not a string');
 
-    if (!(typeOf(password) == 'string'))
-        console.log('ERROR: not a string');
+        return false;
+    }
+
+    if (!(typeOf(password) == 'string')) {
+        console.log('ERROR: password not a string');
+
+        return false;
+    }
 
     // Insert the values into the database
     this.database.transaction(function(query) {

@@ -56,7 +56,9 @@ function tagCurrentPage() {
 
 var deliciousDatabase = new DeliciousDatabase();
 
-deliciousDatabase.addBookmark('Google', 'http://www.google.com');
-deliciousDatabase.addBookmark('Yahoo!', 'http://www.yahoo.com');
-deliciousDatabase.addBookmark('MSN', 'http://www.msn.com');
-deliciousDatabase.getBookmarks();
+deliciousDatabase.addBookmark('Google', 'http://www.google.com', ['search']);
+deliciousDatabase.addBookmark('Yahoo!', 'http://www.yahoo.com', ['search']);
+deliciousDatabase.addBookmark('MSN', 'http://www.msn.com', ['news']);
+deliciousDatabase.getAllBookmarks();
+deliciousDatabase.getBookmarksByTag('search');
+deliciousDatabase.getBookmarksByTag('news');
