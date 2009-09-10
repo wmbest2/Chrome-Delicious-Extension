@@ -59,22 +59,18 @@ function DeliciousDatabase() {
     // Create the tables if they don't exist already
     this.database.transaction(function(query) {
         query.executeSql('CREATE TABLE tags(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50))', []);
-                         []
     });
 
     this.database.transaction(function(query) {
         query.executeSql('CREATE TABLE bookmarks(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(50), url VARCHAR(250))', []);
-                         []
     });
 
     this.database.transaction(function(query) {
         query.executeSql('CREATE TABLE tagged_bookmark(FOREIGN KEY (tag) REFERENCES tags(id), FOREIGN KEY (bookmark) REFERENCES bookmarks(id))', []);
-                         []
     });
 
     this.database.transaction(function(query) {
         query.executeSql('CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(50), password VARCHAR(50))', []);
-                         []
     });
 
     return this;
