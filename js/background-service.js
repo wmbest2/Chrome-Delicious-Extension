@@ -54,39 +54,9 @@ function tagCurrentPage() {
     window.open(deliciousUrl + url + '&title=' + title +' ','deliciousuiv5','location=yes,links=no,scrollbars=no,toolbar=no,width=550,height=550');
 };
 
-var database = window.openDatabase("deliciousDatabase", "0.1", "Delicious Database", 250 * 1024);
+var deliciousDatabase = new DeliciousDatabase();
 
-if (!database) {
-    console.log("Error opening database");
-}
-
-// Create settings table
-database.transaction(function(query) {
-    query.executeSql('CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(50), password VARCHAR(50))', 
-                     []);
-});
-
-// Write a user 
-database.transaction(function(query) {
-    query.executeSql('INSERT INTO settings(username, password) VALUES(?, ?)', 
-                     ['Scott', 'password'],
-                     function(transaction, result) {
-                         console.log(result);
-                     },
-                     function(transaction, error) {
-                         console.log(error);
-                     });
-});
-
-// Read the table 
-database.transaction(function(query) {
-    query.executeSql('SELECT * FROM settings', 
-                     [], 
-                     function(transaction, result) {
-                        console.log(transaction);
-                        console.log(result);
-                     },
-                     function(transaction, error) {
-                         console.log(error);
-                     });
-});
+deliciousDatabase.addBookmark('Google', 'http://www.google.com');
+deliciousDatabase.addBookmark('Yahoo!', 'http://www.yahoo.com');
+deliciousDatabase.addBookmark('MSN', 'http://www.msn.com');
+deliciousDatabase.getBookmarks();
