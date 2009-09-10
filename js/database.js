@@ -79,52 +79,18 @@ function DeliciousDatabase() {
  *
  */
 DeliciousDatabase.prototype.getTagCount = function() {
+
+    var tagCount = 0;
     
     this.database.transaction(function(query) {
         query.executeSql('SELECT COUNT(*) FROM tags',
                          [],
                          function(transaction, result) {
-                             return result.rows.length;
+                             tagCount = result.rows.length;
                          });
     });
-};
 
-/**
- * Returns the internal ID of a stored tag
- *
- */
-DeliciousDatabase.prototype.getTagID = function(tag) {
-    
-    this.database.transaction(function(query) {
-        query.executeSql('SELECT id FROM tags WHERE name = ?',
-                         [tag],
-                         function(transaction, result) {
-                             if (result.rows.length == 0) {
-                                return -1;
-                             }
-
-                             return result.rows.item(0).id;
-                         });
-    });
-};
-
-/**
- * Returns the internal ID of a stored bookmark
- *
- */
-DeliciousDatabase.prototype.getBookmarkID = function(bookmark) {
-    
-    this.database.transaction(function(query) {
-        query.executeSql('SELECT id FROM bookmarks WHERE url = ?',
-                         [bookmark],
-                         function(transaction, result) {
-                             if (result.rows.length == 0) {
-                                return -1;
-                             }
-                            
-                             return result.rows.item(0).id;
-                         });
-    });
+    return tagCount;
 };
 
 /**
@@ -145,8 +111,6 @@ DeliciousDatabase.prototype.addTag = function(tag) {
     this.database.transaction(function(query) {
         query.executeSql('INSERT INTO tags(name) VALUES(?)', [tag]);
     });
-
-    return this.getTagID(tag);
 };
 
 /**
@@ -159,7 +123,6 @@ DeliciousDatabase.prototype.addTag = function(tag) {
  */
 DeliciousDatabase.prototype.addBookmark = function(title, url, tags) {
 
-    var tagIdList = [];
     var that = this;
 
     // If tags weren't provided, default to an empty
@@ -175,18 +138,14 @@ DeliciousDatabase.prototype.addBookmark = function(title, url, tags) {
                          [title, url]);
     });
 
-    // Track the new tag ID's as we add them
     for (var i = 0; i < tags.length; i++) {
-        tagIdList[i] = this.addTag(tags[i]);
-    }
+        // Add the tag to the database
+        this.addTag(tags[i]);
 
-    // Update the tagged_bookmarks table
-    for (var i = 0; i < tagIdList.length; i++) {
         this.database.transaction(function(query) {
-            console.log('Tag ID: ' + tagIdList[i]);
-            console.log('Bookmark ID: ' + that.getBookmarkID(url));
-            query.executeSql('INSERT INTO tagged_bookmarks(tag, bookmark) VALUES(?, ?)',
-                             [tagIdList[i], that.getBookmarkID(url)]);
+            // Add the tag/bookmark relationship to the tagged_bookmarks table
+            query.executeSql('INSERT INTO tagged_bookmarks(tag, bookmark) VALUES((SELECT id FROM tags WHERE name = ?), (SELECT id FROM bookmarks WHERE url = ?))',
+                             [tags[i - 1], url]);   // Why does this have to be [i - 1]?
         });
     }
 };
