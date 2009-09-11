@@ -29,24 +29,39 @@ var currentPage = {};
 // Listener for messages posted via the content script
 chrome.extension.onConnect.addListener(function(port) {
     port.onMessage.addListener(function(data) {
-        currentPage.url = data.url;
-        currentPage.title = data.title;
-        
-        // Register the tab with the tagging page action
-        chrome.pageActions.enableForTab("tag_page",
-                                        { 
-                                            tabId: port.tab.id,
-                                            url: port.tab.url,
-                                            title: "Click to tag this page on Delicious",
-                                            iconId: 0
-                                        });
 
+        // Handle each type of request
+        switch(data.message) {
+            case 'SendPageInfo':
+                currentPage.url = data.url;
+                currentPage.title = data.title;
+        
+                // Register the tab with the tagging page action
+                chrome.pageActions.enableForTab("tag_page",
+                                                { 
+                                                    tabId: port.tab.id,
+                                                    url: port.tab.url,
+                                                    title: "Click to tag this page on Delicious",
+                                                    iconId: 0
+                                                });
+                break;
+            
+            case 'GetPageInfo':
+                port.postMessage({
+                    'url': currentPage.url,
+                    'title': currentPage.title
+                });
+
+                break;
+        }
     });
 });
 
 // Add listener for clicking the page action
 chrome.pageActions["tag_page"].addListener(function(pageActionId, reply) {
-    tagCurrentPage();
+    window.open(chrome.extension.getURL('') + 'add_bookmark.html', 
+                'add-bookmark', 
+                'location=0,scrollbars=0,toolbar=0,resizable=0,menubar=0,status=0,width=380,height=375');
 });
 
 function tagCurrentPage() {

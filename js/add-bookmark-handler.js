@@ -23,16 +23,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-getUrl();
+var port = chrome.extension.connect();
 
-window.addEventListener('focus', getUrl);
+port.onMessage.addListener(function(data) {
+    jQuery('#url-field').html(data.url);
+    jQuery('#title-field').html(data.title);
+});
 
-function getUrl() {
-    if(window == top) {
-        chrome.extension.connect().postMessage({ 
-            'message': 'SendPageInfo',
-            'url': window.location.href,
-            'title': window.document.title
-        });
-    }
-}
+port.postMessage({'message':'GetPageInfo'});

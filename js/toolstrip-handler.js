@@ -23,12 +23,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-dojo.addOnLoad(function(){
-    dojo.query(".menu").connect("onclick", function() {
-		chrome.toolstrip.expand({height: 300});
+jQuery(document).ready(function() {
+    jQuery(".menu").click(function() {
+		chrome.toolstrip.expand({ height: 300 });
 	});
     
-    dojo.query("body").connect("onmouseleave", function() {
+    jQuery("body").bind("mouseleave", function() {
 	    chrome.toolstrip.collapse();
 	});		
-});
+}
