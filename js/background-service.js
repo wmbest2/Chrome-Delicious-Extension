@@ -23,15 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-var deliciousUrl = "http://delicious.com/save?v=5&amp;noui&amp;jump=close&amp;url=";
-var url;
-var title;
+var deliciousDatabase = new DeliciousDatabase();
+var currentPage = {};
 
 // Listener for messages posted via the content script
 chrome.extension.onConnect.addListener(function(port) {
     port.onMessage.addListener(function(data) {
-        url = data.url;
-        title = data.title;
+        currentPage.url = data.url;
+        currentPage.title = data.title;
         
         // Register the tab with the tagging page action
         chrome.pageActions.enableForTab("tag_page",
@@ -45,32 +44,11 @@ chrome.extension.onConnect.addListener(function(port) {
     });
 });
 
+// Add listener for clicking the page action
 chrome.pageActions["tag_page"].addListener(function(pageActionId, reply) {
-    console.log(reply);
     tagCurrentPage();
 });
 
 function tagCurrentPage() {
-    window.open(deliciousUrl + url + '&title=' + title +' ','deliciousuiv5','location=yes,links=no,scrollbars=no,toolbar=no,width=550,height=550');
+    deliciousDatabase.addBookmark(currentPage.url, currentPage.title);
 };
-
-function SomeObject() { return this; }
-
-var someObject = new SomeObject();
-
-inherits(new Observer(), someObject);
-
-someObject.update = function(result) {
-    console.log(result);
-};
-
-var deliciousDatabase = new DeliciousDatabase();
-
-deliciousDatabase.addObserver(someObject);
-
-deliciousDatabase.addBookmark('Google', 'http://www.google.com', ['search']);
-deliciousDatabase.addBookmark('Yahoo!', 'http://www.yahoo.com', ['search']);
-deliciousDatabase.addBookmark('MSN', 'http://www.msn.com', ['news']);
-deliciousDatabase.getBookmarksByTag('search');
-deliciousDatabase.getBookmarksByTag('news');
-
