@@ -83,10 +83,6 @@ function DeliciousDatabase() {
     this.database.transaction(function(query) {
         query.executeSql('CREATE TABLE tagged_bookmarks(tag FOREIGNKEY REFERENCES tags(id), bookmark FOREIGNKEY REFERENCES bookmarks(id))', []);
     });
-
-    this.database.transaction(function(query) {
-        query.executeSql('CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(50), password VARCHAR(50))', []);
-    });
 }
 
 /**
@@ -240,9 +236,4 @@ DeliciousDatabase.prototype.setupUser = function(username, password) {
         return false;
     }
 
-    // Insert the values into the database
-    this.database.transaction(function(query) {
-        query.executeSql('INSERT INTO settings(username, password) VALUES(?, ?)', 
-                         [username, password]);
-    });
 };

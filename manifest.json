@@ -18,7 +18,8 @@
     }
   ],
   "permissions": [
-        "tabs"
+        "tabs",
+        "https://api.del.icio.us/"
   ],
   "name": "Del.icio.us Tools",
   "version": "0.5",
