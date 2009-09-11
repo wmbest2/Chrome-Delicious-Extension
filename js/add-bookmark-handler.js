@@ -27,7 +27,7 @@ var port = chrome.extension.connect();
 
 port.onMessage.addListener(function(data) {
     jQuery('#url-field').html(data.url);
-    jQuery('#title-field').html(data.title);
+    jQuery('#title-field').val(data.title);
 });
 
 port.postMessage({'message':'GetPageInfo'});
