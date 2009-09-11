@@ -64,6 +64,13 @@ function DeliciousDatabase() {
 
     inherits(new Subject(), this);
 
+    var username = localStorage.username;
+    var password = localStorage.password;
+
+    if (username && password) {
+        this.deliciousAPI = new DeliciousAPI(localStorage.username, localStorage.password);
+    }
+
     // Instantiate the database
     this.database = window.openDatabase("deliciousDatabase", "0.1", "Delicious Database", 250 * 1024);
 
@@ -140,25 +147,34 @@ DeliciousDatabase.prototype.addBookmark = function(title, url, tags) {
     // array
     tags = tags || [];
 
-    // TODO: Only write to the database if we receive a successful response
-    // from Delicious
+    // Delicious wants tags in a space-delimited list
+    var formattedTags = '';
 
-    // Write the bookmark to the database
-    this.database.transaction(function(query) {
-        query.executeSql('INSERT INTO bookmarks(title, url) VALUES(?, ?)', [title, url]);
-    });
-
-    // Add each tag to the database, and then create the relational entry
-    // in tagged_bookmarks
     for (var tag in tags) {
-        // Add the tag to the database
-        this.addTag(tags[tag]);
+        formattedTags += (tags[tag] + ' ');
+    }
 
+    // Only write to the database if we receive a successful response
+    // from Delicious
+    if (this.deliciousAPI.add(url, title, formattedTags)) {
+
+        // Write the bookmark to the database
         this.database.transaction(function(query) {
-            // Add the tag/bookmark relationship to the tagged_bookmarks table
-            query.executeSql('INSERT INTO tagged_bookmarks(tag, bookmark) VALUES((SELECT id FROM tags WHERE name = ?), (SELECT id FROM bookmarks WHERE url = ?))',
-                             [tags[tag], url]);   // Why does this have to be [i - 1]?
+            query.executeSql('INSERT INTO bookmarks(title, url) VALUES(?, ?)', [title, url]);
         });
+
+        // Add each tag to the database, and then create the relational entry
+        // in tagged_bookmarks
+        for (var tag in tags) {
+            // Add the tag to the database
+            this.addTag(tags[tag]);
+
+            this.database.transaction(function(query) {
+                // Add the tag/bookmark relationship to the tagged_bookmarks table
+                query.executeSql('INSERT INTO tagged_bookmarks(tag, bookmark) VALUES((SELECT id FROM tags WHERE name = ?), (SELECT id FROM bookmarks WHERE url = ?))',
+                                 [tags[tag], url]);   // Why does this have to be [i - 1]?
+            });
+        }
     }
 };
 
@@ -235,5 +251,10 @@ DeliciousDatabase.prototype.setupUser = function(username, password) {
 
         return false;
     }
+    
+    localStorage.setItem('username', username);
+    localStorage.setItem('password', password);
 
+    // Configure the Delicous API now that we have the username
+    this.deliciousAPI = new DeliciousAPI(localStorage.username, localStorage.password);
 };

@@ -67,7 +67,3 @@ chrome.pageActions["tag_page"].addListener(function(pageActionId, reply) {
 function tagCurrentPage() {
     deliciousDatabase.addBookmark(currentPage.url, currentPage.title);
 };
-
-var deliciousAPI = new DeliciousAPI();
-
-deliciousAPI.get();
