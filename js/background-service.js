@@ -54,11 +54,23 @@ function tagCurrentPage() {
     window.open(deliciousUrl + url + '&title=' + title +' ','deliciousuiv5','location=yes,links=no,scrollbars=no,toolbar=no,width=550,height=550');
 };
 
+function SomeObject() { return this; }
+
+var someObject = new SomeObject();
+
+inherits(new Observer(), someObject);
+
+someObject.update = function(result) {
+    console.log(result);
+};
+
 var deliciousDatabase = new DeliciousDatabase();
+
+deliciousDatabase.addObserver(someObject);
 
 deliciousDatabase.addBookmark('Google', 'http://www.google.com', ['search']);
 deliciousDatabase.addBookmark('Yahoo!', 'http://www.yahoo.com', ['search']);
 deliciousDatabase.addBookmark('MSN', 'http://www.msn.com', ['news']);
-deliciousDatabase.getAllBookmarks();
 deliciousDatabase.getBookmarksByTag('search');
 deliciousDatabase.getBookmarksByTag('news');
+

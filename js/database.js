@@ -24,11 +24,12 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Utility function
+ * Utility functions
  *
  */
 function typeOf(value) {
     var s = typeof value;
+    
     if (s === 'object') {
         if (value) {
             if (typeof value.length === 'number' &&
@@ -40,14 +41,28 @@ function typeOf(value) {
             s = 'null';
         }
     }
+    
     return s;
+}
+
+function inherits(base, extension) {
+    for (var property in base) {
+        try {
+            extension[property] = base[property];
+        } catch (warning) {}
+    }
 }
 
 /**
  * Constructor for DeliciousDatabase object
  *
  */
+
+// TODO: The tagged_bookmarks table needs to be kept up-to-date when
+// bookmarks are deleted
 function DeliciousDatabase() {
+
+    inherits(new Subject(), this);
 
     // Instantiate the database
     this.database = window.openDatabase("deliciousDatabase", "0.1", "Delicious Database", 250 * 1024);
@@ -73,25 +88,6 @@ function DeliciousDatabase() {
         query.executeSql('CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(50), password VARCHAR(50))', []);
     });
 }
-
-/**
- * Counts the number of tags currently stored
- *
- */
-DeliciousDatabase.prototype.getTagCount = function() {
-
-    var tagCount = 0;
-    
-    this.database.transaction(function(query) {
-        query.executeSql('SELECT COUNT(*) FROM tags',
-                         [],
-                         function(transaction, result) {
-                             tagCount = result.rows.length;
-                         });
-    });
-
-    return tagCount;
-};
 
 /**
  * Adds a tag to the database
@@ -123,6 +119,25 @@ DeliciousDatabase.prototype.addTag = function(tag) {
  */
 DeliciousDatabase.prototype.addBookmark = function(title, url, tags) {
 
+    // Type checking for parameters
+    if (!(typeOf(title) == 'string')) {
+        console.log('ERROR: title not a string');
+
+        return false;
+    }
+
+    if (!(typeOf(url) == 'string')) {
+        console.log('ERROR: url not a string');
+
+        return false;
+    }
+
+    if (!(typeOf(tags) == 'array')) {
+        console.log('ERROR: tags not an array');
+
+        return false;
+    }
+
     var that = this;
 
     // If tags weren't provided, default to an empty
@@ -134,18 +149,19 @@ DeliciousDatabase.prototype.addBookmark = function(title, url, tags) {
 
     // Write the bookmark to the database
     this.database.transaction(function(query) {
-        query.executeSql('INSERT INTO bookmarks(title, url) VALUES(?, ?)',
-                         [title, url]);
+        query.executeSql('INSERT INTO bookmarks(title, url) VALUES(?, ?)', [title, url]);
     });
 
-    for (var i = 0; i < tags.length; i++) {
+    // Add each tag to the database, and then create the relational entry
+    // in tagged_bookmarks
+    for (var tag in tags) {
         // Add the tag to the database
-        this.addTag(tags[i]);
+        this.addTag(tags[tag]);
 
         this.database.transaction(function(query) {
             // Add the tag/bookmark relationship to the tagged_bookmarks table
             query.executeSql('INSERT INTO tagged_bookmarks(tag, bookmark) VALUES((SELECT id FROM tags WHERE name = ?), (SELECT id FROM bookmarks WHERE url = ?))',
-                             [tags[i - 1], url]);   // Why does this have to be [i - 1]?
+                             [tags[tag], url]);   // Why does this have to be [i - 1]?
         });
     }
 };
@@ -161,7 +177,8 @@ DeliciousDatabase.prototype.getAllBookmarks = function() {
                          [], 
                          function(transaction, result) {
                             for (var i = 0; i < result.rows.length; i++) {
-                                console.log(result.rows.item(i).title);
+                                // TODO: Return this value
+                                that.notify(result.rows.item(i).title);
                             }
                          });
     }); 
@@ -175,6 +192,8 @@ DeliciousDatabase.prototype.getAllBookmarks = function() {
  */
 DeliciousDatabase.prototype.getBookmarksByTag = function(tag) {
 
+    var that = this;
+
     // Type checking for parameters
     if (!(typeOf(tag) == 'string')) {
         console.log('ERROR: tag not a string');
@@ -186,10 +205,9 @@ DeliciousDatabase.prototype.getBookmarksByTag = function(tag) {
         query.executeSql('SELECT b.title,b.url FROM bookmarks AS b, tags AS t, tagged_bookmarks AS j WHERE b.id = j.bookmark AND t.id = j.tag AND t.name = ?', 
                          [tag],
                          function(transaction, result) {
-                            console.log(result.rows.length);
-                            console.log(tag);
                             for (var i = 0; i < result.rows.length; i++) {
-                                console.log(result.rows.item(i).title);
+                                // Return this value
+                                that.notify(result.rows.item(i).title);
                             }
                          },
                          function(transaction, error) {
