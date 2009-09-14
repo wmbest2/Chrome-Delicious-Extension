@@ -60,6 +60,10 @@ function inherits(base, extension) {
 
 // TODO: The tagged_bookmarks table needs to be kept up-to-date when
 // bookmarks are deleted
+//
+// TODO: Handle when a user account doesn't exist
+//
+// TODO: Populate tables after they are created
 function DeliciousDatabase() {
 
     inherits(new Subject(), this);
@@ -80,15 +84,36 @@ function DeliciousDatabase() {
 
     // Create the tables if they don't exist already
     this.database.transaction(function(query) {
-        query.executeSql('CREATE TABLE tags(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) UNIQUE)', []);
+        query.executeSql('SELECT COUNT(*) FROM tags',
+                         [],
+                         function(transaction, result) {
+                            console.log('Table exists');
+                         },
+                         function(transaction, error) {
+                            transaction.executeSql('CREATE TABLE tags(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) UNIQUE)', []);
+                         });
     });
 
     this.database.transaction(function(query) {
-        query.executeSql('CREATE TABLE bookmarks(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(50), url VARCHAR(250) UNIQUE)', []);
+        query.executeSql('SELECT COUNT(*) FROM tags',
+                         [],
+                         function(transaction, result) {
+                            console.log('Table exists');
+                         },
+                         function(transaction, error) {
+                            transaction.executeSql('CREATE TABLE bookmarks(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(50), url VARCHAR(250) UNIQUE)', []);
+                         });
     });
 
     this.database.transaction(function(query) {
-        query.executeSql('CREATE TABLE tagged_bookmarks(tag FOREIGNKEY REFERENCES tags(id), bookmark FOREIGNKEY REFERENCES bookmarks(id))', []);
+        query.executeSql('SELECT COUNT(*) FROM tags',
+                         [],
+                         function(transaction, result) {
+                            console.log('Table exists');
+                         },
+                         function(transaction, error) {
+                            transaction.executeSql('CREATE TABLE tagged_bookmarks(tag FOREIGNKEY REFERENCES tags(id), bookmark FOREIGNKEY REFERENCES bookmarks(id))', []);
+                         });
     });
 }
 
