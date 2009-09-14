@@ -71,9 +71,47 @@ function DeliciousDatabase() {
     var username = localStorage.username;
     var password = localStorage.password;
 
+    var that = this;
+    
     if (username && password) {
-        this.deliciousAPI = new DeliciousAPI(localStorage.username, localStorage.password);
+        this.deliciousAPI = new DeliciousAPI(username, password);
     }
+
+    // Setup a callback observer to handle responses from the
+    // Delicious API
+
+    var deliciousEventHandler = function() {
+
+        inherits(new Observer(), this);
+
+        this.update = function(response) {
+            // TODO: Handle XML parsing here, then dump it into the database
+            console.log(response);
+
+            // Remove the event handler
+            that.deliciousAPI.removeObserver(this);
+        };
+    };
+
+    var populateTagsTable = function() {
+        // Add an event handler to deal with the response
+        that.deliciousAPI.addObserver(new deliciousEventHandler());
+        
+        // Fetch the XML result from Delicious
+        var result = that.deliciousAPI.getTags();
+    };
+
+    var populateBookmarksTable = function() {
+        // Add an event handler to deal with the response
+        that.deliciousAPI.addObserver(new deliciousEventHandler());
+        
+        // Fetch the XML result from Delicious
+        var result = that.deliciousAPI.recent();
+    };
+
+    var populateTaggedBookmarksTable = function() {
+        // TODO: Populate the database with these values
+    };
 
     // Instantiate the database
     this.database = window.openDatabase("deliciousDatabase", "0.1", "Delicious Database", 250 * 1024);
@@ -87,10 +125,12 @@ function DeliciousDatabase() {
         query.executeSql('SELECT COUNT(*) FROM tags',
                          [],
                          function(transaction, result) {
-                            console.log('Table exists');
+                             console.log('Table exists');
+                             populateTagsTable();
                          },
                          function(transaction, error) {
-                            transaction.executeSql('CREATE TABLE tags(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) UNIQUE)', []);
+                             transaction.executeSql('CREATE TABLE tags(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) UNIQUE)', []);
+                             populateTagsTable();
                          });
     });
 
@@ -98,10 +138,12 @@ function DeliciousDatabase() {
         query.executeSql('SELECT COUNT(*) FROM tags',
                          [],
                          function(transaction, result) {
-                            console.log('Table exists');
+                             console.log('Table exists');
+                             populateBookmarksTable();
                          },
                          function(transaction, error) {
-                            transaction.executeSql('CREATE TABLE bookmarks(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(50), url VARCHAR(250) UNIQUE)', []);
+                             transaction.executeSql('CREATE TABLE bookmarks(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(50), url VARCHAR(250) UNIQUE)', []);
+                             populateBookmarksTable();
                          });
     });
 
@@ -109,10 +151,12 @@ function DeliciousDatabase() {
         query.executeSql('SELECT COUNT(*) FROM tags',
                          [],
                          function(transaction, result) {
-                            console.log('Table exists');
+                             console.log('Table exists');
+                             populateTaggedBookmarksTable();
                          },
                          function(transaction, error) {
-                            transaction.executeSql('CREATE TABLE tagged_bookmarks(tag FOREIGNKEY REFERENCES tags(id), bookmark FOREIGNKEY REFERENCES bookmarks(id))', []);
+                             transaction.executeSql('CREATE TABLE tagged_bookmarks(tag FOREIGNKEY REFERENCES tags(id), bookmark FOREIGNKEY REFERENCES bookmarks(id))', []);
+                             populateTaggedBookmarksTable();
                          });
     });
 }

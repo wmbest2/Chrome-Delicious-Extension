@@ -24,6 +24,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 function DeliciousAPI(username, password) {
+    inherits(new Subject(), this);
+
     this.deliciousURL = 'https://' + username + ':' + password + '@api.del.icio.us/v1/';
 }
 
@@ -33,9 +35,11 @@ function DeliciousAPI(username, password) {
  */
 DeliciousAPI.prototype.update = function() {
 
+    var that = this;
+
     jQuery.get(this.deliciousURL + 'posts/update',
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -49,6 +53,8 @@ DeliciousAPI.prototype.update = function() {
  */
 DeliciousAPI.prototype.add = function(url, title, tags) {
 
+    var that = this;
+
     jQuery.get(this.deliciousURL + 'posts/add',
                {
                    url: url,
@@ -56,7 +62,7 @@ DeliciousAPI.prototype.add = function(url, title, tags) {
                    tags: tags
                },
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -68,12 +74,14 @@ DeliciousAPI.prototype.add = function(url, title, tags) {
  */
 DeliciousAPI.prototype.deletePost = function(url) {
 
+    var that = this;
+
     jQuery.get(this.deliciousURL + 'posts/delete',
                {
                    url: url
                },
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -84,9 +92,11 @@ DeliciousAPI.prototype.deletePost = function(url) {
  */
 DeliciousAPI.prototype.getPosts = function() {
 
+    var that = this;
+
 	jQuery.get(this.deliciousURL + 'posts/get', 
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -96,9 +106,12 @@ DeliciousAPI.prototype.getPosts = function() {
  */
 DeliciousAPI.prototype.recent = function() {
 
+    var that = this;
+
     jQuery.get(this.deliciousURL + 'posts/recent',
                function(response) {
                    console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -108,9 +121,11 @@ DeliciousAPI.prototype.recent = function() {
  */
 DeliciousAPI.prototype.dates = function() {
 
+    var that = this;
+
 	jQuery.get(this.deliciousURL + 'posts/dates', 
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -121,9 +136,11 @@ DeliciousAPI.prototype.dates = function() {
  */
 DeliciousAPI.prototype.all = function() {
 
+    var that = this;
+
 	jQuery.get(this.deliciousURL + 'posts/all', 
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -134,12 +151,14 @@ DeliciousAPI.prototype.all = function() {
  */
 DeliciousAPI.prototype.hash = function() {
 
+    var that = this;
+
 	jQuery.get(this.deliciousURL + 'posts/all', 
                {
                    hash: ''
                },
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -152,12 +171,14 @@ DeliciousAPI.prototype.hash = function() {
  */
 DeliciousAPI.prototype.suggest = function(url) {
 
+    var that = this;
+
 	jQuery.get(this.deliciousURL + 'posts/suggest', 
                {
                    url: url
                },
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -166,11 +187,13 @@ DeliciousAPI.prototype.suggest = function(url) {
  * user.
  *
  */
-DeliciousAPI.prototype.getTags = function(url) {
+DeliciousAPI.prototype.getTags = function() {
+
+    var that = this;
 
 	jQuery.get(this.deliciousURL + 'tags/get', 
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -182,12 +205,14 @@ DeliciousAPI.prototype.getTags = function(url) {
  */
 DeliciousAPI.prototype.deleteTag = function(tag) {
 
+    var that = this;
+
 	jQuery.get(this.deliciousURL + 'tags/delete', 
                {
                    tag: tag
                },
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -200,13 +225,15 @@ DeliciousAPI.prototype.deleteTag = function(tag) {
  */
 DeliciousAPI.prototype.rename = function(oldTag, newTag) {
 
+    var that = this;
+
 	jQuery.get(this.deliciousURL + 'tags/rename', 
                {
                    oldTag: oldTag,
                    newTag: newTag
                },
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -216,9 +243,11 @@ DeliciousAPI.prototype.rename = function(oldTag, newTag) {
  */
 DeliciousAPI.prototype.bundles = function() {
 
+    var that = this;
+
 	jQuery.get(this.deliciousURL + 'tags/bundles/all', 
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -232,13 +261,15 @@ DeliciousAPI.prototype.bundles = function() {
  */
 DeliciousAPI.prototype.set = function(bundle, tags) {
 
+    var that = this;
+
 	jQuery.get(this.deliciousURL + 'tags/bundles/set', 
                {
                    bundle: bundle,
                    tags: tags
                },
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
 
@@ -250,11 +281,13 @@ DeliciousAPI.prototype.set = function(bundle, tags) {
  */
 DeliciousAPI.prototype.deleteBundle = function(bundle) {
 
+    var that = this;
+
 	jQuery.get(this.deliciousURL + 'tags/bundles/delete', 
                {
                    bundle: bundle
                },
                function(response) {
-                   console.log(response);
+                   that.notify(response);
                });
 };
