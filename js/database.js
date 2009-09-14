@@ -77,6 +77,45 @@ function DeliciousDatabase() {
         this.deliciousAPI = new DeliciousAPI(username, password);
     }
 
+
+    var populateTagsTable = function(response, that) {
+        // Loop over each tag and add it to the database
+        jQuery(response).find('tags').find('tag').each(function() {
+            var count = jQuery(this).attr('count');
+            var tag = jQuery(this).attr('tag');
+
+            that.database.transaction(function(query) {
+                query.executeSql('INSERT INTO tags(name, count) VALUES(?, ?)', [tag, count]);
+            });
+        });
+    };
+
+    var populateBookmarksTable = function(response, that) {
+        // Loop over each post and add it into the database
+        jQuery(response).find('posts').find('post').each(function() {
+            var url = jQuery(this).attr('href');
+            var hash = jQuery(this).attr('hash');
+            var title = jQuery(this).attr('description');
+            var tags = jQuery(this).attr('tag').split(' ');
+
+            that.database.transaction(function(query) {
+                query.executeSql('INSERT INTO bookmarks(title, url) VALUES(?, ?)', [title, url]);
+            });
+
+            // TODO: This can't be done implicitly here.  We need to make sure both the tags
+            // and the bookmarks have been successfully returned first
+            //
+            // Write the tag/bookmark relationships
+            for (var tag in tags) {            
+                that.database.transaction(function(query) {
+                    // Add the tag/bookmark relationship to the tagged_bookmarks table
+                    query.executeSql('INSERT INTO tagged_bookmarks(tag, bookmark) VALUES((SELECT id FROM tags WHERE name = ?), (SELECT id FROM bookmarks WHERE url = ?))',
+                                     [tags[tag], url]);
+                });
+            }
+        });
+    };
+    
     // Setup a callback observer to handle responses from the
     // Delicious API
 
@@ -84,29 +123,19 @@ function DeliciousDatabase() {
 
         inherits(new Observer(), this);
 
+        // Remove the event handler
+        that.deliciousAPI.removeObserver(this);
+
         this.update = function(response) {
-            // TODO: Handle XML parsing here, then dump it into the database
-            console.log(response);
-
-            // Remove the event handler
-            that.deliciousAPI.removeObserver(this);
+            switch (response.type) {
+                case 'bookmark':
+                    populateBookmarksTable(response.xml, that);
+                    break;
+                case 'tag':
+                    populateTagsTable(response.xml, that);
+                    break;
+            }
         };
-    };
-
-    var populateTagsTable = function() {
-        // Add an event handler to deal with the response
-        that.deliciousAPI.addObserver(new deliciousEventHandler());
-        
-        // Fetch the XML result from Delicious
-        var result = that.deliciousAPI.getTags();
-    };
-
-    var populateBookmarksTable = function() {
-        // Add an event handler to deal with the response
-        that.deliciousAPI.addObserver(new deliciousEventHandler());
-        
-        // Fetch the XML result from Delicious
-        var result = that.deliciousAPI.recent();
     };
 
     var populateTaggedBookmarksTable = function() {
@@ -126,11 +155,14 @@ function DeliciousDatabase() {
                          [],
                          function(transaction, result) {
                              console.log('Table exists');
-                             populateTagsTable();
+                             // Add an event handler to deal with the response
+                             that.deliciousAPI.addObserver(new deliciousEventHandler());
+
+                             // Fetch the XML result from Delicious
+                             var result = that.deliciousAPI.getTags();
                          },
                          function(transaction, error) {
-                             transaction.executeSql('CREATE TABLE tags(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) UNIQUE)', []);
-                             populateTagsTable();
+                             transaction.executeSql('CREATE TABLE tags(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) UNIQUE, count INTEGER)', []);
                          });
     });
 
@@ -139,24 +171,25 @@ function DeliciousDatabase() {
                          [],
                          function(transaction, result) {
                              console.log('Table exists');
-                             populateBookmarksTable();
-                         },
-                         function(transaction, error) {
-                             transaction.executeSql('CREATE TABLE bookmarks(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(50), url VARCHAR(250) UNIQUE)', []);
-                             populateBookmarksTable();
-                         });
-    });
-
-    this.database.transaction(function(query) {
-        query.executeSql('SELECT COUNT(*) FROM tags',
-                         [],
-                         function(transaction, result) {
-                             console.log('Table exists');
-                             populateTaggedBookmarksTable();
                          },
                          function(transaction, error) {
                              transaction.executeSql('CREATE TABLE tagged_bookmarks(tag FOREIGNKEY REFERENCES tags(id), bookmark FOREIGNKEY REFERENCES bookmarks(id))', []);
-                             populateTaggedBookmarksTable();
+                         });
+    });
+
+    this.database.transaction(function(query) {
+        query.executeSql('SELECT COUNT(*) FROM tags',
+                         [],
+                         function(transaction, result) {
+                             console.log('Table exists');
+                             // Add an event handler to deal with the response
+                             that.deliciousAPI.addObserver(new deliciousEventHandler());
+
+                             // Fetch the XML result from Delicious
+                             var result = that.deliciousAPI.recent();
+                         },
+                         function(transaction, error) {
+                             transaction.executeSql('CREATE TABLE bookmarks(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(50), url VARCHAR(250) UNIQUE)', []);
                          });
     });
 }
@@ -241,7 +274,7 @@ DeliciousDatabase.prototype.addBookmark = function(title, url, tags) {
             this.database.transaction(function(query) {
                 // Add the tag/bookmark relationship to the tagged_bookmarks table
                 query.executeSql('INSERT INTO tagged_bookmarks(tag, bookmark) VALUES((SELECT id FROM tags WHERE name = ?), (SELECT id FROM bookmarks WHERE url = ?))',
-                                 [tags[tag], url]);   // Why does this have to be [i - 1]?
+                                 [tags[tag], url]);
             });
         }
     }
@@ -253,12 +286,13 @@ DeliciousDatabase.prototype.addBookmark = function(title, url, tags) {
  */
 DeliciousDatabase.prototype.getAllBookmarks = function() {
 
+    var that = this;
+
     this.database.transaction(function(query) {
         query.executeSql('SELECT * FROM bookmarks', 
                          [], 
                          function(transaction, result) {
                             for (var i = 0; i < result.rows.length; i++) {
-                                // TODO: Return this value
                                 that.notify(result.rows.item(i).title);
                             }
                          });
@@ -326,4 +360,25 @@ DeliciousDatabase.prototype.setupUser = function(username, password) {
 
     // Configure the Delicous API now that we have the username
     this.deliciousAPI = new DeliciousAPI(localStorage.username, localStorage.password);
+};
+
+/**
+ * Sandbox query method.  Executes any query you provide.
+ *
+ */
+DeliciousDatabase.prototype.query = function(userQuery) {
+
+    this.database.transaction(function(query) {
+        query.executeSql(userQuery, 
+                         [],
+                         function(transaction, result) {
+                            for (var i = 0; i < result.rows.length; i++) {
+                                // Return this value
+                                console.log(result.rows.item(i));
+                            }
+                         },
+                         function(transaction, error) {
+                             console.log(error);
+                         });
+    });
 };

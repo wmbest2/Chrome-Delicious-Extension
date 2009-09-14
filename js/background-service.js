@@ -26,6 +26,19 @@
 var deliciousDatabase = new DeliciousDatabase();
 var currentPage = {};
 
+function TestDatabase() {
+    inherits(new Observer(), this);
+
+    this.update = function(response) {
+        console.log('Database said something!');
+        console.log(response);
+    }
+}
+
+var testDatabase = new TestDatabase();
+
+deliciousDatabase.addObserver(testDatabase);
+
 // Listener for messages posted via the content script
 chrome.extension.onConnect.addListener(function(port) {
     port.onMessage.addListener(function(data) {

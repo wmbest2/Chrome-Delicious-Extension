@@ -110,8 +110,10 @@ DeliciousAPI.prototype.recent = function() {
 
     jQuery.get(this.deliciousURL + 'posts/recent',
                function(response) {
-                   console.log(response);
-                   that.notify(response);
+                   that.notify({
+                       'type': 'bookmark', 
+                       'xml': response
+                    });
                });
 };
 
@@ -193,7 +195,10 @@ DeliciousAPI.prototype.getTags = function() {
 
 	jQuery.get(this.deliciousURL + 'tags/get', 
                function(response) {
-                   that.notify(response);
+                   that.notify({
+                       'type': 'tag',
+                       'xml': response
+                   });
                });
 };
 

@@ -48,7 +48,7 @@ function Subject() {
  *
  */
 Subject.prototype.notify = function(context) {
-    
+
     for (var i = 0; i < this.observers.length; i++) {
         this.observers[i].update(context);
     }
