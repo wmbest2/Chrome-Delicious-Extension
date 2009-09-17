@@ -16,7 +16,7 @@ body {
 }
 
 .toolstrip {
-  height: 23px;
+  height: 25px;
   -webkit-box-align: center;
   border: 1px solid grey;
   	-webkit-box-flex: 0;
@@ -24,10 +24,15 @@ body {
 
 .toolstrip-button div, img {
 	-webkit-box-direction:normal;
+	vertical-align:middle;
+}
+
+div.toolstrip-button > img {
+	margin-top: -5px;
 }
 
 .toolstrip-content {
-  -webkit-box-flex: 1;
+  -webkit-box-flex: 0.001;
   background-color: white;
   color: black;
   width:300;

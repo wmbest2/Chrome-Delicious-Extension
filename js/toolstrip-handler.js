@@ -29,7 +29,7 @@ jQuery(document).ready(function() {
 	jQuery(".bookmarks").toggle();
 
     jQuery(".menu").click(function() {
-		chrome.toolstrip.expand({ height: 300 });
+		chrome.toolstrip.expand({ height: 200 });
 
 		if(!expanded) {
 	      jQuery(".bookmarks").toggle();
