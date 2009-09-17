@@ -23,12 +23,27 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+expanded = false;
+
 jQuery(document).ready(function() {
+	jQuery(".bookmarks").toggle();
+
     jQuery(".menu").click(function() {
 		chrome.toolstrip.expand({ height: 300 });
+
+		if(!expanded) {
+	      jQuery(".bookmarks").toggle();
+		  expanded = !expanded;
+		  }
+
+		
 	});
     
     jQuery("body").bind("mouseleave", function() {
 	    chrome.toolstrip.collapse();
+		if(expanded) {
+	      jQuery(".bookmarks").toggle();
+		  expanded = !expanded;
+		  }
 	});		
-}
+});
