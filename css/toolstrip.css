@@ -21,6 +21,8 @@ body {
 .settings {
 	display:none;
 	-webkit-box-orient:vertical;
+	width:100%;
+	padding:15px;
 }
 
 .toolstrip {
