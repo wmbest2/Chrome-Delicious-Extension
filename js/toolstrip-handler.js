@@ -23,27 +23,29 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-expanded = false;
 
 jQuery(document).ready(function() {
-	jQuery(".bookmarks").toggle();
 
-    jQuery(".menu").click(function() {
+    jQuery(".bookmarks-menu").click(function() {
 		chrome.toolstrip.expand({ height: 200 });
-
-		if(!expanded) {
-	      jQuery(".bookmarks").toggle();
-		  expanded = !expanded;
+		if(jQuery(".bookmarks").is(":hidden")) {
+	      jQuery(".bookmarks").show();
+  		  jQuery(".settings").hide();
 		  }
+	});
 
-		
+	jQuery(".settings-menu").click(function() {
+		chrome.toolstrip.expand({ height: 200 });
+		if(jQuery(".settings").is(":hidden")) {
+ 		  jQuery(".bookmarks").hide();
+	      jQuery(".settings").show();
+		  }
 	});
     
     jQuery("body").bind("mouseleave", function() {
 	    chrome.toolstrip.collapse();
-		if(expanded) {
-	      jQuery(".bookmarks").toggle();
-		  expanded = !expanded;
-		  }
+
+	      jQuery(".bookmarks").hide();
+		  jQuery(".settings").hide();
 	});		
 });
