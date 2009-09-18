@@ -26,7 +26,9 @@
 
 jQuery(document).ready(function() {
 
-    jQuery(".bookmarks-menu").click(function() {
+	$("label").inFieldLabels();	
+	
+	jQuery(".bookmarks-menu").click(function() {
 		chrome.toolstrip.expand({ height: 200 });
 		if(jQuery(".bookmarks").is(":hidden")) {
 	      jQuery(".bookmarks").show();

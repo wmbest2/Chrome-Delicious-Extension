@@ -2,6 +2,7 @@
 body {
   -webkit-box-orient:vertical;
   -webkit-box-direction:normal;
+  -webkit-box-align:start;
 }
 
 .toolstrip-buttons, .toolstrip-content {
@@ -26,7 +27,7 @@ body {
 }
 
 .toolstrip {
-  height: 25px;
+
   -webkit-box-align: start;
   border: 1px solid grey;
 
@@ -47,4 +48,7 @@ div.toolstrip-button > img {
   color: black;
   width:300;
 }
+
+p.infield { position:relative }
+label  { position:absolute; top:5; left:5}
 

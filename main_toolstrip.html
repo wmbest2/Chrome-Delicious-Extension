@@ -1,6 +1,7 @@
 <html>
     <head>
 		<script type="text/javascript" src="js/jquery.js"></script>
+		<script type="text/javascript" src="js/jquery.infieldlabel.min.js"></script>
 		<script type="text/javascript" src="js/toolstrip-handler.js"></script>
 		<link rel="stylesheet" type="text/css" href="css/toolstrip.css" />
     </head>
@@ -10,9 +11,11 @@
 		</div>
 		<div class="toolstrip-content settings">
 			<h3>Settings</h3>
-			<p>
-			<label>Username:</label><input id="username" type="text" /><br />
-			<label>Password:</label><input id="password" type="password" /><br />
+			<p class="infield">
+			<label for="username">Username</label><input id="username" type="text" />
+			</p>
+			<p class="infield">
+			<label for="password">Password</label><input id="password" type="password" /><br />
 			</p>
 		</div>
 		<div class="toolstrip-buttons">
